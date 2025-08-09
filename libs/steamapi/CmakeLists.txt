@@ -1,0 +1,37 @@
+# https://partner.steamgames.com/downloads/steamworks_sdk.zip
+
+project(steamapi)
+
+
+add_library(${PROJECT_NAME} OBJECT steamapi.cpp)
+
+target_include_directories(${PROJECT_NAME} PUBLIC
+	"${CMAKE_CURRENT_LIST_DIR}/public/steam/"
+)
+
+set(STEAM_BIN_DIR "${CMAKE_CURRENT_LIST_DIR}/redistributable_bin" PARENT_SCOPE)
+set(_STEAM_BIN_DIR "${CMAKE_CURRENT_LIST_DIR}/redistributable_bin")
+
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	if(CMAKE_SIZEOF_VOID_P  EQUAL 8)
+		target_link_libraries(${PROJECT_NAME} "${_STEAM_BIN_DIR}/win64/steam_api64.lib")
+		macro(target_copy_steam_api_to_ouput_dir object_name)
+			add_custom_command(TARGET ${object_name} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy 
+				"${STEAM_BIN_DIR}/win64/steam_api64.dll"
+				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/steam_api64.dll"
+			)
+		endmacro()
+	else()
+		target_link_libraries(${PROJECT_NAME} "${_STEAM_BIN_DIR}/steam_api.lib")
+		macro(target_copy_steam_api_to_ouput_dir object_name)
+			add_custom_command(TARGET ${object_name} POST_BUILD
+				COMMAND ${CMAKE_COMMAND} -E copy 
+				"${STEAM_BIN_DIR}/steam_api.dll"
+				"${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/steam_api.dll"
+			)
+		endmacro()
+	endif()
+endif()
+
